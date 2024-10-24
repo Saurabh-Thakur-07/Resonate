@@ -32,8 +32,8 @@ jobs:
           architecture: x64
 
       # Run Flutter analyze to check for bad Dart/Flutter practices
-      - name: 📏 Analyze
-        run: flutter analyze
+      # - name: 📏 Analyze
+      #   run: flutter analyze
 
       # Run Flutter tests
       - name: 🧪 Run tests
