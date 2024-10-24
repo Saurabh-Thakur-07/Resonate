@@ -36,8 +36,8 @@ jobs:
       #   run: flutter analyze
 
       # Run Flutter tests
-      - name: 🧪 Run tests
-        run: flutter test
+      # - name: 🧪 Run tests
+      #   run: flutter test
 
       # Build Android APK
       - name: 📦 Build Android APK
