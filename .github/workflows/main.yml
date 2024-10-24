@@ -1,0 +1,72 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '12'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+
+      # Run Flutter analyze to check for bad Dart/Flutter practices
+      - name: 📏 Analyze
+        run: flutter analyze
+
+      # Run Flutter tests
+      - name: 🧪 Run tests
+        run: flutter test
+
+      # Build Android APK
+      - name: 📦 Build Android APK
+        run: flutter build apk --release --split-per-abi
+
+      # Build iOS IPA (with code signing)
+      - name: 📦 Build iOS IPA
+        run: |
+          flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r app.ipa Payload
+
+      # Upload artifacts for Android and iOS
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts
+          path: |
+            build/app/outputs/apk/release/*.apk
+            build/ios/iphoneos/app.ipa
+
+      # Push to Releases
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*.apk,build/ios/iphoneos/app.ipa"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
